@@ -42,6 +42,10 @@ func (m Matrix) getUpdatedMatrix(newMatrix MatrixElements) (MatrixElements,error
    
 }
 
+func (m Matrix) getJsonMatrix() Matrix {
+    return m;
+}
+
 
 
 func main() {
@@ -52,4 +56,5 @@ func main() {
    fmt.Println(matrix1.getElement(1,1))
    addMatrix := [][]int{{1,2}, {3, 4}}
    fmt.Println(matrix1.getUpdatedMatrix(addMatrix))
+   fmt.Println(matrix1.getJsonMatrix())
 }
