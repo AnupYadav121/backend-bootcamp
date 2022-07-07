@@ -30,7 +30,7 @@ func getUpdate(val *int, mych chan int, n int) {
 
 func main() {
 	rating := 0
-	numStudents := 50
+	numStudents := 5
 	var wg sync.WaitGroup
 	mych := make(chan int, 5)
 	go getUpdate(&rating, mych, numStudents)
