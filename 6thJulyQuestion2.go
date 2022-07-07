@@ -7,37 +7,39 @@ import (
 	"time"
 )
 
-func getRating(id int) {
+func getRating(id int, chnl chan int, wg *sync.WaitGroup) {
 	fmt.Printf("Rating %d starting\n", id)
-
 	seed := rand.NewSource(time.Now().UnixNano())
-	rand := rand.New(seed)
-	time.Sleep(time.Duration(rand.Int31n(3000)) * time.Millisecond)
+	randy := rand.New(seed)
+	time.Sleep(time.Duration(randy.Int31n(3000)) * time.Millisecond)
 	fmt.Printf("Rating %d done\n", id)
+
+	min := 1
+	max := 10
+	var ratingRandom int = randy.Intn(((max - min + 1) + min))
+	chnl <- ratingRandom
+	wg.Done()
+}
+
+func getUpdate(val *int, mych chan int, n int) {
+	for i := 0; i < n; i++ {
+		ratingGiven := <-mych
+		*val += ratingGiven
+	}
 }
 
 func main() {
 	rating := 0
-	numStudents := 200
+	numStudents := 50
 	var wg sync.WaitGroup
+	mych := make(chan int, 5)
+	go getUpdate(&rating, mych, numStudents)
 
 	for i := 1; i <= numStudents; i++ {
 		wg.Add(1)
+		j := i
 
-		i := i
-
-		go func() {
-			defer wg.Done()
-			getRating(i)
-
-		}()
-
-		seed := rand.NewSource(time.Now().UnixNano())
-		rand := rand.New(seed)
-		min := 1
-		max := 10
-		var ratingRandom int = rand.Intn(((max - min + 1) + min))
-		rating += ratingRandom
+		go getRating(j, mych, &wg)
 
 	}
 
