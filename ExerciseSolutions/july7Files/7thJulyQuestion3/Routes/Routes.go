@@ -2,7 +2,7 @@
 package Routes
 
 import (
-	"7thJulyQuestion1/Controllers"
+	"7thJulyQuestion3/Controllers"
 	"github.com/gin-gonic/gin"
 )
 

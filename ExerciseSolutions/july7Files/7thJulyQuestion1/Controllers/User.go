@@ -49,12 +49,16 @@ func GetUserByID(c *gin.Context) {
 func UpdateUser(c *gin.Context) {
 	var user Models.User
 	id := c.Params.ByName("id")
+	fmt.Println(id)
 	err := Models.GetUserByID(&user, id)
+
 	if err != nil {
 		c.JSON(http.StatusNotFound, user)
+		return
 	}
+
 	c.BindJSON(&user)
-	err = Models.UpdateUser(&user, id)
+	err = Models.UpdateUser(&user)
 	if err != nil {
 		c.AbortWithStatus(http.StatusNotFound)
 	} else {

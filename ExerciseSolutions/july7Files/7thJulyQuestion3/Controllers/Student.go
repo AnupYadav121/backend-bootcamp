@@ -2,7 +2,7 @@
 package Controllers
 
 import (
-	"7thJulyQuestion1/Models"
+	"7thJulyQuestion3/Models"
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"net/http"
@@ -53,7 +53,7 @@ func UpdateStudent(c *gin.Context) {
 		c.JSON(http.StatusNotFound, student)
 	}
 	c.BindJSON(&student)
-	err = Models.UpdateStudent(&student, id)
+	err = Models.UpdateStudent(&student)
 	if err != nil {
 		c.AbortWithStatus(http.StatusNotFound)
 	} else {

@@ -1,4 +1,4 @@
-module 7thJulyQuestion1
+module 7thJulyQuestion3
 
 go 1.19
 
