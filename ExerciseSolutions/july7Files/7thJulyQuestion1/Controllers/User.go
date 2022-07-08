@@ -10,12 +10,12 @@ import (
 
 // GetUsers ... Get all users
 func GetUsers(c *gin.Context) {
-	var user []Models.User
-	err := Models.GetAllUsers(&user)
+	var users []Models.User
+	err := Models.GetAllUsers(&users)
 	if err != nil {
 		c.AbortWithStatus(http.StatusNotFound)
 	} else {
-		c.JSON(http.StatusOK, user)
+		c.JSON(http.StatusOK, users)
 	}
 }
 
@@ -24,6 +24,7 @@ func CreateUser(c *gin.Context) {
 	var user Models.User
 	c.BindJSON(&user)
 	err := Models.CreateUser(&user)
+
 	if err != nil {
 		fmt.Println(err.Error())
 		c.AbortWithStatus(http.StatusNotFound)
