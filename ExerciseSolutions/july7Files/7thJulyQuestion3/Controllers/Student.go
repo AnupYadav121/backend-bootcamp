@@ -10,12 +10,12 @@ import (
 
 // GetStudents ... Get all students
 func GetStudents(c *gin.Context) {
-	var student []Models.Student
-	err := Models.GetAllStudents(&student)
+	var students []Models.Student
+	err := Models.GetAllStudents(&students)
 	if err != nil {
 		c.AbortWithStatus(http.StatusNotFound)
 	} else {
-		c.JSON(http.StatusOK, student)
+		c.JSON(http.StatusOK, students)
 	}
 }
 

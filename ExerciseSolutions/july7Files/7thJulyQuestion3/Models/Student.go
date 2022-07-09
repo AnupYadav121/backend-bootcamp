@@ -33,7 +33,6 @@ func GetAllStudents(Student *[]Student) (err error) {
 
 // UpdateStudent ... Update Student
 func UpdateStudent(Student *Student) (err error) {
-
 	if err = Config.DB.Save(Student).Error; err != nil {
 		return err
 	}

@@ -2,9 +2,9 @@
 package main
 
 import (
-	"7thJulyQuestion3/Config"
-	"7thJulyQuestion3/Models"
-	"7thJulyQuestion3/Routes"
+	"7thJulyQuestion2/Config"
+	"7thJulyQuestion2/Models"
+	"7thJulyQuestion2/Routes"
 	"fmt"
 	"github.com/jinzhu/gorm"
 )
