@@ -6,6 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 	_ "github.com/go-sql-driver/mysql"
 	"net/http"
+	"strconv"
 )
 
 func CreateStudent(c *gin.Context) {
@@ -13,6 +14,13 @@ func CreateStudent(c *gin.Context) {
 	err := c.ShouldBindJSON(&Input)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"Error": err.Error()})
+		return
+	}
+
+	var SubjectMarks Models.SubjectMarks
+	errNew := Utils.IsPresentSubject(strconv.Itoa(int(Input.SubjectMarksID)), &SubjectMarks)
+	if errNew != nil {
+		c.JSON(http.StatusNotFound, gin.H{"Error": "provided subjectMarksID Not Found"})
 		return
 	}
 
@@ -24,7 +32,8 @@ func CreateStudent(c *gin.Context) {
 func GetStudents(c *gin.Context) {
 	var Students []Models.Student
 	Utils.DoFind(&Students)
-	c.JSON(http.StatusOK, gin.H{"Students": Students})
+
+	c.JSON(http.StatusOK, gin.H{"Students": &Students})
 }
 
 func FindStudent(c *gin.Context) {
@@ -35,7 +44,15 @@ func FindStudent(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"Students": Student})
+	var SubjectMarks Models.SubjectMarks
+	errNew := Utils.IsPresentSubject(strconv.Itoa(int(Student.SubjectMarksID)), &SubjectMarks)
+	if errNew != nil {
+		c.JSON(http.StatusNotFound, gin.H{"Error": "SubjectMarks Not Found"})
+		return
+	}
+
+	studentFullData := Models.StudentData{ID: Student.ID, FirstName: Student.FirstName, LastName: Student.LastName, DOB: Student.DOB, Address: Student.LastName, SubjectMarks: SubjectMarks}
+	c.JSON(http.StatusOK, gin.H{"Students": studentFullData})
 }
 
 func UpdateStudent(c *gin.Context) {
@@ -49,6 +66,13 @@ func UpdateStudent(c *gin.Context) {
 	errNew := c.ShouldBindJSON(&NewStudent)
 	if errNew != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"Error": "New student request body is not correct"})
+		return
+	}
+
+	var SubjectMarks Models.SubjectMarks
+	newErr := Utils.IsPresentSubject(strconv.Itoa(int(NewStudent.SubjectMarksID)), &SubjectMarks)
+	if newErr != nil {
+		c.JSON(http.StatusNotFound, gin.H{"Error": "Provided subjectMarksID Not Found"})
 		return
 	}
 
@@ -86,9 +110,9 @@ func CreateSubjectMarks(c *gin.Context) {
 }
 
 func GetSubjectMarks(c *gin.Context) {
-	var SubjectMarkss []Models.SubjectMarks
-	Utils.DoFindSubject(&SubjectMarkss)
-	c.JSON(http.StatusOK, gin.H{"SubjectMarkss": SubjectMarkss})
+	var SubjectMarks []Models.SubjectMarks
+	Utils.DoFindSubjects(&SubjectMarks)
+	c.JSON(http.StatusOK, gin.H{"SubjectMarks": SubjectMarks})
 }
 
 func FindSubjectMarks(c *gin.Context) {
@@ -98,7 +122,7 @@ func FindSubjectMarks(c *gin.Context) {
 		c.JSON(http.StatusNotFound, gin.H{"Error": "SubjectMarks Not Found"})
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"SubjectMarkss": SubjectMarks})
+	c.JSON(http.StatusOK, gin.H{"SubjectMarks": SubjectMarks})
 }
 
 func UpdateSubjectMarks(c *gin.Context) {

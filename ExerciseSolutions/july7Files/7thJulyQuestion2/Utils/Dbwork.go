@@ -33,7 +33,7 @@ func DoCreateSubject(SubjectMarks *Models.SubjectMarks) {
 	Config.DB.Create(SubjectMarks)
 }
 
-func DoFindSubject(SubjectMarks *[]Models.SubjectMarks) {
+func DoFindSubjects(SubjectMarks *[]Models.SubjectMarks) {
 	Config.DB.Find(SubjectMarks)
 }
 

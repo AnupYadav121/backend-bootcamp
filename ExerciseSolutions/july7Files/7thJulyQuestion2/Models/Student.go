@@ -16,13 +16,22 @@ type Student struct {
 	SubjectMarksID uint   `json:"subjectMarksID" gorm:"foreign_key"`
 }
 
+type StudentData struct {
+	ID           uint         `json:"id" gorm:"primary_key"`
+	FirstName    string       `json:"firstName"`
+	LastName     string       `json:"lastName"`
+	DOB          string       `json:"dob"`
+	Address      string       `json:"address"`
+	SubjectMarks SubjectMarks `json:"subjectMarksID" gorm:"foreign_key"`
+}
+
 type InputStudent struct {
-	ID             uint   `json:"id" gorm:"primary_key"`
-	FirstName      string `json:"firstName"`
-	LastName       string `json:"lastName"`
-	DOB            string `json:"dob"`
-	Address        string `json:"address"`
-	SubjectMarksID uint   `json:"subjectMarksID" gorm:"foreign_key"`
+	ID        uint           `json:"id" gorm:"primary_key"`
+	FirstName string         `json:"firstName"`
+	LastName  string         `json:"lastName"`
+	DOB       string         `json:"dob"`
+	Address   string         `json:"address"`
+	Marks     []SubjectMarks `json:"marks"`
 }
 
 type UpdatedStudent struct {
