@@ -18,6 +18,7 @@ func main() {
 	}
 
 	defer Config.DB.Close()
+
 	Config.DB.AutoMigrate(&Models.Order{})
 	Config.DB.AutoMigrate(&Models.Product{})
 	Config.DB.AutoMigrate(&Models.Transaction{})
