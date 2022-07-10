@@ -8,6 +8,7 @@ type Product struct {
 }
 
 type UpdatedProduct struct {
-	Price    int `json:"price"`
-	Quantity int `json:"quantity"`
+	ProductName string `json:"product_name"`
+	Price       int    `json:"price"`
+	Quantity    int    `json:"quantity"`
 }

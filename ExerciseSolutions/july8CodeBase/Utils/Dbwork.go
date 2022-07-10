@@ -5,16 +5,16 @@ import (
 	"july8Files/Models"
 )
 
-func IsPresent(id string, Product *Models.Product) error {
-	return Config.DB.Where("id = ?", id).First(Product).Error
+func IsPresent(id string, product *Models.Product) error {
+	return Config.DB.Where("id = ?", id).First(product).Error
 }
 
-func DoCreate(Product *Models.Product) {
-	Config.DB.Create(Product)
+func DoCreate(product *Models.Product) {
+	Config.DB.Create(product)
 }
 
-func DoFind(Product *[]Models.Product) {
-	Config.DB.Find(Product)
+func DoFind(products *[]Models.Product) {
+	Config.DB.Find(products)
 }
 
 func DoUpdate(Product *Models.Product, newProduct Models.UpdatedProduct) {
@@ -37,10 +37,30 @@ func IsPresentC(id string, Customer *Models.Customer) error {
 	return Config.DB.Where("id = ?", id).First(Customer).Error
 }
 
-func IsPresentO(id string, Order *Models.OrderUpdated) error {
+func IsPresentO(id string, Order *Models.Order) error {
 	return Config.DB.Where("id = ?", id).First(Order).Error
+}
+
+func IsPresentOU(id string, OrderUpdate *Models.OrderUpdated) error {
+	return Config.DB.Where("id = ?", id).First(OrderUpdate).Error
+}
+
+func IsPresentCU(id string, OrderUpdate *Models.OrderUpdated) error {
+	return Config.DB.Where("customer_id = ?", id).First(OrderUpdate).Error
 }
 
 func DoCreateO(Order *Models.Order) {
 	Config.DB.Create(Order)
+}
+
+func DoCreateOU(Order *Models.OrderUpdated) {
+	Config.DB.Create(Order)
+}
+
+func FindAllOrders(products *[]Models.OrderUpdated) error {
+	return Config.DB.Find(products).Error
+}
+
+func IsCustomerOrder(id string, Orders *[]Models.Order) error {
+	return Config.DB.Where("customer_id = ?", id).First(Orders).Error
 }

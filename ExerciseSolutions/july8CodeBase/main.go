@@ -21,7 +21,6 @@ func main() {
 
 	Config.DB.AutoMigrate(&Models.Order{})
 	Config.DB.AutoMigrate(&Models.Product{})
-	Config.DB.AutoMigrate(&Models.Transaction{})
 	Config.DB.AutoMigrate(&Models.Customer{})
 	Config.DB.AutoMigrate(&Models.OrderUpdated{})
 

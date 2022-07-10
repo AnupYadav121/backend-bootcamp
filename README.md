@@ -1,2 +1,0 @@
-# freshers-bootcamp
-golang practice
