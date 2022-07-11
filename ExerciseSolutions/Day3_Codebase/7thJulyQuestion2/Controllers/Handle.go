@@ -9,6 +9,22 @@ import (
 	"strconv"
 )
 
+type Handle interface {
+	CreateStudent(c *gin.Context)
+	GetStudents(c *gin.Context)
+	FindStudent(c *gin.Context)
+	GetStudentInfo(c *gin.Context)
+	UpdateStudent(c *gin.Context)
+
+	DeleteStudent(c *gin.Context)
+	CreateSubjectMarks(c *gin.Context)
+	GetSubjectMarks(c *gin.Context)
+	GetMyMarks(c *gin.Context)
+	FindSubjectMarks(c *gin.Context)
+	UpdateSubjectMarks(c *gin.Context)
+	DeleteSubjectMarks(c *gin.Context)
+}
+
 func CreateStudent(c *gin.Context) {
 	var Input Models.Student
 	err := c.ShouldBindJSON(&Input)

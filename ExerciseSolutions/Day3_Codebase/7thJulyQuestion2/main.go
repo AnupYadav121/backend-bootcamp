@@ -17,10 +17,19 @@ func main() {
 		fmt.Println("Status:", err)
 	}
 
-	defer Config.DB.Close()
+	defer func(DB *gorm.DB) {
+		err := DB.Close()
+		if err != nil {
+			panic("Error occurred in closing DB connection")
+		}
+	}(Config.DB)
+
 	Config.DB.AutoMigrate(&Models.Student{})
 	Config.DB.AutoMigrate(&Models.SubjectMarks{})
 	r := Routes.SetupRouter()
 	//running
-	r.Run()
+	err := r.Run()
+	if err != nil {
+		panic("Error occurred during network router start")
+	}
 }
