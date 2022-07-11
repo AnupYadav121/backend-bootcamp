@@ -16,17 +16,8 @@ func CreateStudent(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"Error": err.Error()})
 		return
 	}
-
-	var SubjectMarks Models.SubjectMarks
-	errNew := Utils.IsPresentSubject(strconv.Itoa(int(Input.SubjectMarksID)), &SubjectMarks)
-	if errNew != nil {
-		c.JSON(http.StatusNotFound, gin.H{"Error": "provided subjectMarksID Not Found"})
-		return
-	}
-
-	Student := Models.Student{FirstName: Input.FirstName, LastName: Input.LastName, DOB: Input.DOB, Address: Input.Address, SubjectMarksID: Input.SubjectMarksID}
-	Utils.DoCreate(&Student)
-	c.JSON(http.StatusOK, gin.H{"Students": Student})
+	Utils.DoCreate(&Input)
+	c.JSON(http.StatusOK, gin.H{"Students": Input})
 }
 
 func GetStudents(c *gin.Context) {
@@ -43,16 +34,22 @@ func FindStudent(c *gin.Context) {
 		c.JSON(http.StatusNotFound, gin.H{"Error": "Student Not Found"})
 		return
 	}
+	c.JSON(http.StatusOK, gin.H{"Student": Student})
+}
 
-	var SubjectMarks Models.SubjectMarks
-	errNew := Utils.IsPresentSubject(strconv.Itoa(int(Student.SubjectMarksID)), &SubjectMarks)
-	if errNew != nil {
-		c.JSON(http.StatusNotFound, gin.H{"Error": "SubjectMarks Not Found"})
+func GetStudentInfo(c *gin.Context) {
+	var Student Models.Student
+	err := Utils.IsPresent(c.Param("id"), &Student)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"Error": "Student Not Found"})
 		return
 	}
 
-	studentFullData := Models.StudentData{ID: Student.ID, FirstName: Student.FirstName, LastName: Student.LastName, DOB: Student.DOB, Address: Student.LastName, SubjectMarks: SubjectMarks}
-	c.JSON(http.StatusOK, gin.H{"Students": studentFullData})
+	var SubjectMarks []Models.SubjectMarks
+	Utils.MyMarks(c.Param("id"), &SubjectMarks)
+
+	MyInfo := Models.StudentInfo{ID: Student.ID, FirstName: Student.FirstName, LastName: Student.LastName, DOB: Student.DOB, Address: Student.Address, Marks: SubjectMarks}
+	c.JSON(http.StatusOK, gin.H{"My Complete Info": MyInfo})
 }
 
 func UpdateStudent(c *gin.Context) {
@@ -62,17 +59,11 @@ func UpdateStudent(c *gin.Context) {
 		c.JSON(http.StatusNotFound, gin.H{"Error": "Student id to be updated record not found"})
 		return
 	}
+
 	var NewStudent Models.UpdatedStudent
 	errNew := c.ShouldBindJSON(&NewStudent)
 	if errNew != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"Error": "New student request body is not correct"})
-		return
-	}
-
-	var SubjectMarks Models.SubjectMarks
-	newErr := Utils.IsPresentSubject(strconv.Itoa(int(NewStudent.SubjectMarksID)), &SubjectMarks)
-	if newErr != nil {
-		c.JSON(http.StatusNotFound, gin.H{"Error": "Provided subjectMarksID Not Found"})
 		return
 	}
 
@@ -85,6 +76,13 @@ func DeleteStudent(c *gin.Context) {
 	err := Utils.IsPresent(c.Param("id"), &Student)
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"Error": "Student id to be deleted, record not found"})
+		return
+	}
+
+	var SubjectMarks []Models.SubjectMarks
+	errNew := Utils.IsMyMark(c.Param("id"), &SubjectMarks)
+	if errNew == nil {
+		c.JSON(http.StatusNotFound, gin.H{"Error": "Student Id is related to Subjects Marks. Sorry !, Can not delete it"})
 		return
 	}
 
@@ -104,34 +102,54 @@ func CreateSubjectMarks(c *gin.Context) {
 		return
 	}
 
-	SubjectMarks := Models.SubjectMarks{Subject: Input.Subject, Marks: Input.Marks, Grade: Input.Grade}
-	Utils.DoCreateSubject(&SubjectMarks)
-	c.JSON(http.StatusOK, gin.H{"SubjectMarkss": SubjectMarks})
+	var Student Models.Student
+	errNew := Utils.IsPresent(strconv.Itoa(int(Input.StudentId)), &Student)
+	if errNew != nil {
+		c.JSON(http.StatusNotFound, gin.H{"Error": "Student with id Not Found"})
+		return
+	}
+
+	Utils.DoCreateMark(&Input)
+	c.JSON(http.StatusOK, gin.H{"SubjectMarks": Input})
 }
 
 func GetSubjectMarks(c *gin.Context) {
 	var SubjectMarks []Models.SubjectMarks
-	Utils.DoFindSubjects(&SubjectMarks)
+	Utils.DoFindMarks(&SubjectMarks)
 	c.JSON(http.StatusOK, gin.H{"SubjectMarks": SubjectMarks})
+}
+
+func GetMyMarks(c *gin.Context) {
+	var Student Models.Student
+	err := Utils.IsPresent(c.Param("id"), &Student)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"Error": "Student Not Found"})
+		return
+	}
+
+	var SubjectMarks []Models.SubjectMarks
+	Utils.MyMarks(c.Param("id"), &SubjectMarks)
+	c.JSON(http.StatusOK, gin.H{"My SubjectMarks": SubjectMarks})
 }
 
 func FindSubjectMarks(c *gin.Context) {
 	var SubjectMarks Models.SubjectMarks
-	err := Utils.IsPresentSubject(c.Param("id"), &SubjectMarks)
+	err := Utils.IsPresentMark(c.Param("id"), &SubjectMarks)
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"Error": "SubjectMarks Not Found"})
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"SubjectMarks": SubjectMarks})
+	c.JSON(http.StatusOK, gin.H{"SubjectMark": SubjectMarks})
 }
 
 func UpdateSubjectMarks(c *gin.Context) {
 	var SubjectMarks Models.SubjectMarks
-	err := Utils.IsPresentSubject(c.Param("id"), &SubjectMarks)
+	err := Utils.IsPresentMark(c.Param("id"), &SubjectMarks)
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"Error": "SubjectMarks id to be updated record not found"})
 		return
 	}
+
 	var NewSubjectMarks Models.UpdatedSubjectMarks
 	errNew := c.ShouldBindJSON(&NewSubjectMarks)
 	if errNew != nil {
@@ -139,19 +157,26 @@ func UpdateSubjectMarks(c *gin.Context) {
 		return
 	}
 
-	Utils.DoUpdateSubject(&SubjectMarks, NewSubjectMarks)
+	var Student Models.Student
+	newErr := Utils.IsPresent(strconv.Itoa(int(NewSubjectMarks.StudentId)), &Student)
+	if newErr != nil {
+		c.JSON(http.StatusNotFound, gin.H{"Error": "Student with id Not Found"})
+		return
+	}
+
+	Utils.DoUpdateMark(&SubjectMarks, NewSubjectMarks)
 	c.JSON(http.StatusOK, NewSubjectMarks)
 }
 
 func DeleteSubjectMarks(c *gin.Context) {
 	var SubjectMarks Models.SubjectMarks
-	err := Utils.IsPresentSubject(c.Param("id"), &SubjectMarks)
+	err := Utils.IsPresentMark(c.Param("id"), &SubjectMarks)
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"Error": "SubjectMarks id to be deleted, record not found"})
 		return
 	}
 
-	newErr := Utils.DoDeleteSubject(&SubjectMarks)
+	newErr := Utils.DoDeleteMark(&SubjectMarks)
 	if newErr != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"Error": "Error occurred in deletion of the SubjectMarks"})
 		return
