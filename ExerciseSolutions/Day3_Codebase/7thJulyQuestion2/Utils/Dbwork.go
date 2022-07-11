@@ -5,50 +5,73 @@ import (
 	"7thJulyQuestion2/Models"
 )
 
-func IsPresent(id string, Student *Models.Student) error {
+type InterfaceDB interface {
+	IsPresent(id string, Student *Models.Student) error
+	DoCreate(Student *Models.Student)
+	DoFind(Student *[]Models.Student)
+	DoUpdate(Student *Models.Student, newStudent Models.UpdatedStudent)
+	DoDelete(Student *Models.Student) error
+
+	IsPresentMark(id string, SubjectMarks *Models.SubjectMarks) error
+	DoCreateMark(SubjectMarks *Models.SubjectMarks)
+	DoFindMarks(SubjectMarks *[]Models.SubjectMarks)
+	DoUpdateMark(SubjectMarks *Models.SubjectMarks, newSubjectMarks Models.UpdatedSubjectMarks)
+	DoDeleteMark(SubjectMarks *Models.SubjectMarks) error
+	MyMarks(id string, SubjectMarks *[]Models.SubjectMarks)
+	IsMyMark(id string, SubjectMarks *[]Models.SubjectMarks) error
+}
+
+type DB struct {
+}
+
+func GetDBStruct() *DB {
+	return &DB{}
+}
+
+func (db *DB) IsPresent(id string, Student *Models.Student) error {
 	return Config.DB.Where("id = ?", id).First(Student).Error
 }
 
-func DoCreate(Student *Models.Student) {
+func (db *DB) DoCreate(Student *Models.Student) {
 	Config.DB.Create(Student)
 }
 
-func DoFind(Student *[]Models.Student) {
+func (db *DB) DoFind(Student *[]Models.Student) {
 	Config.DB.Find(Student)
 }
 
-func DoUpdate(Student *Models.Student, newStudent Models.UpdatedStudent) {
+func (db *DB) DoUpdate(Student *Models.Student, newStudent Models.UpdatedStudent) {
 	Config.DB.Model(Student).Updates(newStudent)
 }
 
-func DoDelete(Student *Models.Student) error {
+func (db *DB) DoDelete(Student *Models.Student) error {
 	return Config.DB.Delete(Student).Error
 }
 
-func IsPresentMark(id string, SubjectMarks *Models.SubjectMarks) error {
+func (db *DB) IsPresentMark(id string, SubjectMarks *Models.SubjectMarks) error {
 	return Config.DB.Where("id = ?", id).First(SubjectMarks).Error
 }
 
-func DoCreateMark(SubjectMarks *Models.SubjectMarks) {
+func (db *DB) DoCreateMark(SubjectMarks *Models.SubjectMarks) {
 	Config.DB.Create(SubjectMarks)
 }
 
-func DoFindMarks(SubjectMarks *[]Models.SubjectMarks) {
+func (db *DB) DoFindMarks(SubjectMarks *[]Models.SubjectMarks) {
 	Config.DB.Find(SubjectMarks)
 }
 
-func DoUpdateMark(SubjectMarks *Models.SubjectMarks, newSubjectMarks Models.UpdatedSubjectMarks) {
+func (db *DB) DoUpdateMark(SubjectMarks *Models.SubjectMarks, newSubjectMarks Models.UpdatedSubjectMarks) {
 	Config.DB.Model(SubjectMarks).Updates(newSubjectMarks)
 }
 
-func DoDeleteMark(SubjectMarks *Models.SubjectMarks) error {
+func (db *DB) DoDeleteMark(SubjectMarks *Models.SubjectMarks) error {
 	return Config.DB.Delete(SubjectMarks).Error
 }
 
-func MyMarks(id string, SubjectMarks *[]Models.SubjectMarks) {
+func (db *DB) MyMarks(id string, SubjectMarks *[]Models.SubjectMarks) {
 	Config.DB.Where("student_id = ?", id).Find(SubjectMarks)
 }
 
-func IsMyMark(id string, SubjectMarks *[]Models.SubjectMarks) error {
+func (db *DB) IsMyMark(id string, SubjectMarks *[]Models.SubjectMarks) error {
 	return Config.DB.Where("student_id = ?", id).First(SubjectMarks).Error
 }
