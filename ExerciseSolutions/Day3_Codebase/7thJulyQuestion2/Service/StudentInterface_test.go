@@ -1,8 +1,8 @@
 package Service
 
 import (
+	Utils "7thJulyQuestion2/DB_Utils/mock"
 	"7thJulyQuestion2/Models"
-	Utils "7thJulyQuestion2/Utils/mock"
 	"github.com/gin-gonic/gin"
 	"github.com/golang/mock/gomock"
 	_ "github.com/stretchr/testify/assert"
@@ -51,7 +51,7 @@ func TestFindStudent(t *testing.T) {
 	iMock := Utils.NewMockInterfaceDB(ctrl)
 
 	for _, _ = range tests {
-		iMock.EXPECT().IsPresent(gomock.Any(), gomock.Any()).Return(&student1, nil).Times(1)
+		iMock.EXPECT().IsPresent(gomock.Any(), gomock.Any()).Return(&student1, nil).Times(2)
 		studentService := NewStudent(iMock)
 
 		c := &gin.Context{}
@@ -61,6 +61,14 @@ func TestFindStudent(t *testing.T) {
 				Value: "1",
 			},
 		}
+		cc := &gin.Context{}
+		cc.Params = gin.Params{
+			{
+				Key:   "id",
+				Value: "1",
+			},
+		}
 		studentService.FindStudent(c)
+		studentService.FindStudent(cc)
 	}
 }

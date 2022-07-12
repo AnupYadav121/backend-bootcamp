@@ -29,9 +29,9 @@ func GetDB() InterfaceDB {
 }
 
 func (db *DB) IsPresent(id string, Student *Models.Student) (*Models.Student, error) {
-	err := Config.DB.Where("id = ?", id).First(Student)
+	err := Config.DB.Where("id = ?", id).First(Student).Error
 	if err != nil {
-		return nil, err.Error
+		return nil, err
 	}
 	return Student, nil
 }

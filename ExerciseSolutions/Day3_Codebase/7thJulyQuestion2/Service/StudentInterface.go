@@ -1,8 +1,8 @@
 package Service
 
 import (
+	Utils "7thJulyQuestion2/DB_Utils"
 	"7thJulyQuestion2/Models"
-	"7thJulyQuestion2/Utils"
 	"github.com/gin-gonic/gin"
 	_ "github.com/go-sql-driver/mysql"
 	"net/http"

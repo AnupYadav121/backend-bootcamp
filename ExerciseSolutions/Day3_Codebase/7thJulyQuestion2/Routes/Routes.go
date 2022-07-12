@@ -3,8 +3,8 @@ package Routes
 
 import "C"
 import (
+	"7thJulyQuestion2/DB_Utils"
 	"7thJulyQuestion2/Service"
-	"7thJulyQuestion2/Utils"
 	"github.com/gin-gonic/gin"
 )
 
@@ -27,7 +27,7 @@ func SetupRouter() *gin.Engine {
 		grp1.POST("SubjectMarks", marksEndpointContext.SaveMarks)
 		grp1.GET("SubjectMarks/:id", marksEndpointContext.FindMarks)
 		grp1.GET("MyMarks/:id", marksEndpointContext.GetMyMarks)
-		grp1.GET("SubjectMarks", marksEndpointContext.GetMyMarks)
+		grp1.GET("SubjectMarks", marksEndpointContext.GetMarks)
 		grp1.PUT("SubjectMarks/:id", marksEndpointContext.UpdateMarks)
 		grp1.DELETE("SubjectMarks/:id", marksEndpointContext.DeleteMarks)
 	}
