@@ -1,8 +1,9 @@
-package Controllers
+package Service
 
 import (
 	"7thJulyQuestion2/Models"
 	"7thJulyQuestion2/Utils"
+	"fmt"
 	"github.com/gin-gonic/gin"
 	_ "github.com/go-sql-driver/mysql"
 	"net/http"
@@ -10,12 +11,12 @@ import (
 )
 
 type InterfaceMarks interface {
-	CreateSubjectMarks()
-	GetSubjectMarks()
+	SaveMarks()
+	GetMarks()
 	GetMyMarks()
-	FindSubjectMarks()
-	UpdateSubjectMarks()
-	DeleteSubjectMarks()
+	FindMarks()
+	UpdateMarks()
+	DeleteMarks()
 }
 
 type Marks struct {
@@ -26,7 +27,7 @@ func NewMarks() *Marks {
 	return &Marks{}
 }
 
-func (marks *Marks) CreateSubjectMarks(c *gin.Context) {
+func (marks *Marks) SaveMarks(c *gin.Context) {
 	var Input Models.SubjectMarks
 	err := c.ShouldBindJSON(&Input)
 	if err != nil {
@@ -41,9 +42,10 @@ func (marks *Marks) CreateSubjectMarks(c *gin.Context) {
 	}
 
 	var Student Models.Student
-	errNew := marks.db.IsPresent(strconv.Itoa(int(Input.StudentId)), &Student)
+	StudentData, errNew := marks.db.IsPresent(strconv.Itoa(int(Input.StudentId)), &Student)
 	if errNew != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"Error": "Student with id Not Found"})
+		fmt.Println(StudentData)
 		return
 	}
 
@@ -51,7 +53,7 @@ func (marks *Marks) CreateSubjectMarks(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"SubjectMarks": Input})
 }
 
-func (marks *Marks) GetSubjectMarks(c *gin.Context) {
+func (marks *Marks) GetMarks(c *gin.Context) {
 	var SubjectMarks []Models.SubjectMarks
 	marks.db.DoFindMarks(&SubjectMarks)
 	c.JSON(http.StatusOK, gin.H{"SubjectMarks": SubjectMarks})
@@ -59,18 +61,18 @@ func (marks *Marks) GetSubjectMarks(c *gin.Context) {
 
 func (marks *Marks) GetMyMarks(c *gin.Context) {
 	var Student Models.Student
-	err := marks.db.IsPresent(c.Param("id"), &Student)
+	StudentData, err := marks.db.IsPresent(c.Param("id"), &Student)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"Error": "Student Not Found"})
 		return
 	}
-
+	fmt.Println(StudentData)
 	var SubjectMarks []Models.SubjectMarks
 	marks.db.MyMarks(c.Param("id"), &SubjectMarks)
 	c.JSON(http.StatusOK, gin.H{"My SubjectMarks": SubjectMarks})
 }
 
-func (marks *Marks) FindSubjectMarks(c *gin.Context) {
+func (marks *Marks) FindMarks(c *gin.Context) {
 	var SubjectMarks Models.SubjectMarks
 	err := marks.db.IsPresentMark(c.Param("id"), &SubjectMarks)
 	if err != nil {
@@ -80,7 +82,7 @@ func (marks *Marks) FindSubjectMarks(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"SubjectMark": SubjectMarks})
 }
 
-func (marks *Marks) UpdateSubjectMarks(c *gin.Context) {
+func (marks *Marks) UpdateMarks(c *gin.Context) {
 	var SubjectMarks Models.SubjectMarks
 	err := marks.db.IsPresentMark(c.Param("id"), &SubjectMarks)
 	if err != nil {
@@ -102,17 +104,17 @@ func (marks *Marks) UpdateSubjectMarks(c *gin.Context) {
 	}
 
 	var Student Models.Student
-	newErr := marks.db.IsPresent(strconv.Itoa(int(NewSubjectMarks.StudentId)), &Student)
+	StudentData, newErr := marks.db.IsPresent(strconv.Itoa(int(NewSubjectMarks.StudentId)), &Student)
 	if newErr != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"Error": "Student with id Not Found"})
 		return
 	}
-
+	fmt.Println(StudentData)
 	marks.db.DoUpdateMark(&SubjectMarks, NewSubjectMarks)
 	c.JSON(http.StatusOK, NewSubjectMarks)
 }
 
-func (marks *Marks) DeleteSubjectMarks(c *gin.Context) {
+func (marks *Marks) DeleteMarks(c *gin.Context) {
 	var SubjectMarks Models.SubjectMarks
 	err := marks.db.IsPresentMark(c.Param("id"), &SubjectMarks)
 	if err != nil {

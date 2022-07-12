@@ -6,7 +6,7 @@ import (
 )
 
 type InterfaceDB interface {
-	IsPresent(id string, Student *Models.Student) error
+	IsPresent(id string, Student *Models.Student) (*Models.Student, error)
 	DoCreate(Student *Models.Student)
 	DoFind(Student *[]Models.Student)
 	DoUpdate(Student *Models.Student, newStudent Models.UpdatedStudent)
@@ -24,12 +24,16 @@ type InterfaceDB interface {
 type DB struct {
 }
 
-func GetDBStruct() *DB {
+func GetDB() InterfaceDB {
 	return &DB{}
 }
 
-func (db *DB) IsPresent(id string, Student *Models.Student) error {
-	return Config.DB.Where("id = ?", id).First(Student).Error
+func (db *DB) IsPresent(id string, Student *Models.Student) (*Models.Student, error) {
+	err := Config.DB.Where("id = ?", id).First(Student)
+	if err != nil {
+		return nil, err.Error
+	}
+	return Student, nil
 }
 
 func (db *DB) DoCreate(Student *Models.Student) {

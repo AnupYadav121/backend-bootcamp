@@ -3,7 +3,8 @@ package Routes
 
 import "C"
 import (
-	"7thJulyQuestion2/Controllers"
+	"7thJulyQuestion2/Service"
+	"7thJulyQuestion2/Utils"
 	"github.com/gin-gonic/gin"
 )
 
@@ -12,8 +13,8 @@ func SetupRouter() *gin.Engine {
 	r := gin.Default()
 	grp1 := r.Group("/Home")
 
-	marksEndpointContext := Controllers.NewMarks()
-	studentEndpointContext := Controllers.NewStudent()
+	marksEndpointContext := Service.NewMarks()
+	studentEndpointContext := Service.NewStudent(Utils.GetDB())
 
 	{
 		grp1.POST("Student", studentEndpointContext.CreateStudent)
@@ -23,12 +24,12 @@ func SetupRouter() *gin.Engine {
 		grp1.PUT("Student/:id", studentEndpointContext.UpdateStudent)
 		grp1.DELETE("Student/:id", studentEndpointContext.DeleteStudent)
 
-		grp1.POST("SubjectMarks", marksEndpointContext.CreateSubjectMarks)
-		grp1.GET("SubjectMarks/:id", marksEndpointContext.FindSubjectMarks)
+		grp1.POST("SubjectMarks", marksEndpointContext.SaveMarks)
+		grp1.GET("SubjectMarks/:id", marksEndpointContext.FindMarks)
 		grp1.GET("MyMarks/:id", marksEndpointContext.GetMyMarks)
-		grp1.GET("SubjectMarks", marksEndpointContext.GetSubjectMarks)
-		grp1.PUT("SubjectMarks/:id", marksEndpointContext.UpdateSubjectMarks)
-		grp1.DELETE("SubjectMarks/:id", marksEndpointContext.DeleteSubjectMarks)
+		grp1.GET("SubjectMarks", marksEndpointContext.GetMyMarks)
+		grp1.PUT("SubjectMarks/:id", marksEndpointContext.UpdateMarks)
+		grp1.DELETE("SubjectMarks/:id", marksEndpointContext.DeleteMarks)
 	}
 	return r
 }
