@@ -23,7 +23,7 @@ type Marks struct {
 	db Utils.DB
 }
 
-func NewMarks() *Marks {
+func NewMarks(db Utils.InterfaceDB) *Marks {
 	return &Marks{}
 }
 

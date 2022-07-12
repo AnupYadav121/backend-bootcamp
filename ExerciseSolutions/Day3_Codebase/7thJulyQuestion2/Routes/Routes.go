@@ -13,7 +13,7 @@ func SetupRouter() *gin.Engine {
 	r := gin.Default()
 	grp1 := r.Group("/Home")
 
-	marksEndpointContext := Service.NewMarks()
+	marksEndpointContext := Service.NewMarks(Utils.GetDB())
 	studentEndpointContext := Service.NewStudent(Utils.GetDB())
 
 	{
