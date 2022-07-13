@@ -17,14 +17,22 @@ func main() {
 		fmt.Println("Status:", err)
 	}
 
-	defer Config.DB.Close()
+	defer func(DB *gorm.DB) {
+		err := DB.Close()
+		if err != nil {
+			panic("Error Occurred in closing DB")
+		}
+	}(Config.DB)
 
 	Config.DB.AutoMigrate(&Models.Order{})
 	Config.DB.AutoMigrate(&Models.Product{})
 	Config.DB.AutoMigrate(&Models.Customer{})
-	Config.DB.AutoMigrate(&Models.OrderUpdated{})
+	Config.DB.AutoMigrate(&Models.Retailer{})
 
 	r := Routes.SetupRouter()
 	//running
-	r.Run()
+	err := r.Run()
+	if err != nil {
+		panic("Error occurred in handing start router")
+	}
 }

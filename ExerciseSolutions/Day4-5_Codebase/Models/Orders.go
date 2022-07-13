@@ -1,20 +1,46 @@
 package Models
 
-type Order struct {
-	ID         uint `json:"id"`
-	CustomerID int  `json:"customer_id"`
-	ProductID  int  ` json:"product_id"`
-	Quantity   int  `json:"quantity"`
-}
+import "errors"
 
-type OrderUpdated struct {
+type Order struct {
 	ID         uint   `json:"id"`
-	CustomerID int    `json:"customer_id"`
+	CustomerID int    `json:"customer_id" gorm:"foreign_key"`
 	ProductID  int    ` json:"product_id"`
 	Quantity   int    `json:"quantity"`
 	Status     string `json:"status"`
 }
 
+var (
+	ErrInvalidID  = errors.New("invalid ID")
+	ErrCustomerID = errors.New("customer id is invalid")
+	ErrProductID  = errors.New("product id is invalid")
+	ErrQuantity   = errors.New("quantity value is invalid")
+)
+
+func (o *Order) OrderValidate() error {
+	switch {
+	case o.ID < 0:
+		return ErrInvalidID
+	case o.ProductID <= 0:
+		return ErrProductID
+	case o.CustomerID <= 0:
+		return ErrCustomerID
+	case o.Quantity <= 0:
+		return ErrQuantity
+	default:
+		return nil
+	}
+}
+
 type Customer struct {
-	ID uint `json:"id"`
+	ID uint `json:"id" gorm:"primary_key"`
+}
+
+func (c *Customer) CustomerValidate() error {
+	switch {
+	case c.ID < 0:
+		return ErrCustomerID
+	default:
+		return nil
+	}
 }

@@ -20,6 +20,10 @@ func SetupRouter() *gin.Engine {
 		grp1.DELETE("product/:id", withProduct.DeleteProduct)
 		grp1.GET("orders", withProduct.GetAllTransactions)
 
+		grp1.POST("retailer", withProduct.AuthRetailer)
+		grp1.POST("retailer/:id", withProduct.RemoveAuthRetailer)
+		grp1.GET("retailer/:id", withProduct.IsRetailerAuthenticated)
+
 		grp1.POST("order", withCustomer.CreateOrder)
 		grp1.GET("order/:id", withCustomer.FindOrderUpdates)
 		grp1.POST("order/:id", withCustomer.SetOrderStatus)
