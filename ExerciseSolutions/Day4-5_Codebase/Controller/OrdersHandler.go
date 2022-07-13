@@ -15,6 +15,7 @@ type CustomerInterface interface {
 	SetOrderStatus(c *gin.Context)
 	FindOrderUpdates(c *gin.Context)
 	GetMyOrders(c *gin.Context)
+	CreateMultipleOrder(c *gin.Context)
 }
 
 type CustomerHandle struct {
@@ -45,6 +46,11 @@ func (ch *CustomerHandle) CreateOrder(c *gin.Context) {
 	os.OrderCreation(c)
 }
 
+func (ch *CustomerHandle) CreateMultipleOrder(c *gin.Context) {
+	os := Service.NewCustomerService(ch.db)
+	os.MultipleOrderCreation(c)
+}
+
 func (ch *CustomerHandle) SetOrderStatus(c *gin.Context) {
 	os := Service.NewCustomerService(ch.db)
 	os.SetStatus(c)
@@ -57,5 +63,5 @@ func (ch *CustomerHandle) FindOrderUpdates(c *gin.Context) {
 
 func (ch *CustomerHandle) GetMyOrders(c *gin.Context) {
 	os := Service.NewCustomerService(ch.db)
-	os.GetMyOrder(c)
+	os.GetMyOrders(c)
 }

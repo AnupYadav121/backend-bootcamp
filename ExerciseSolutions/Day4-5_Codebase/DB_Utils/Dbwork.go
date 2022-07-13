@@ -92,7 +92,7 @@ func (db *DB) IsPresentCU(id string, OrderUpdate *Models.Order) error {
 }
 
 func (db *DB) DoCreateO(Order *Models.Order) {
-	Config.DB.Create(Order)
+	Config.DB.Save(Order)
 }
 
 func (db *DB) DoCreateOU(Order *Models.Order) {
@@ -104,7 +104,7 @@ func (db *DB) FindAllOrders(products *[]Models.Order) error {
 }
 
 func (db *DB) IsCustomerOrder(id string, Orders *[]Models.Order) error {
-	return Config.DB.Where("customer_id = ?", id).First(Orders).Error
+	return Config.DB.Where("customer_id = ?", id).Find(Orders).Error
 }
 
 func (db *DB) DoUpdateO(newOrder Models.Order) {

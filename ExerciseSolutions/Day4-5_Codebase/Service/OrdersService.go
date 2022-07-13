@@ -4,6 +4,7 @@ import (
 	"github.com/gin-gonic/gin"
 	_ "github.com/go-sql-driver/mysql"
 	"july8Files/DB_Utils"
+	"july8Files/Dto"
 	"july8Files/Models"
 	"net/http"
 	"strconv"
@@ -16,7 +17,8 @@ type OrderServiceInterface interface {
 	OrderCreation(c *gin.Context)
 	SetStatus(c *gin.Context)
 	FindUpdate(c *gin.Context)
-	GetMyOrder(c *gin.Context)
+	GetMyOrders(c *gin.Context)
+	MultipleOrderCreation(c *gin.Context)
 }
 
 type OrderService struct {
@@ -110,6 +112,41 @@ func (cs *OrderService) OrderCreation(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"Order": newOrder})
 }
 
+func (cs *OrderService) MultipleOrderCreation(c *gin.Context) {
+	var newOrder Dto.Order
+	err := c.ShouldBindJSON(&newOrder)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"Error": err.Error()})
+		return
+	}
+
+	nwErr := newOrder.OrderValidate()
+	if nwErr != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"Error": nwErr})
+		return
+	}
+
+	var customer Models.Customer
+	errNew := cs.db.IsPresentC(strconv.Itoa(int(newOrder.CustomerID)), &customer)
+	if errNew != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"Error": "Given customer id is not authenticated"})
+		return
+	}
+
+	for i := 0; i < len(newOrder.ProductID); i++ {
+		var product Models.Product
+		newErr := cs.db.IsPresent(strconv.Itoa(int(newOrder.ProductID[i])), &product)
+		if newErr != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"Error": "Given one of the product id does not exist"})
+			return
+		}
+		orderNew := Models.Order{ProductID: newOrder.ProductID[i], CustomerID: newOrder.CustomerID, Quantity: newOrder.Quantity[i]}
+		cs.db.DoCreateO(&orderNew)
+	}
+
+	c.JSON(http.StatusOK, gin.H{"Order": newOrder})
+}
+
 func (cs *OrderService) SetStatus(c *gin.Context) {
 	var orderStatus Models.Order
 	err := c.ShouldBindJSON(&orderStatus)
@@ -146,7 +183,7 @@ func (cs *OrderService) FindUpdate(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"Order updates": orderExist})
 }
 
-func (cs *OrderService) GetMyOrder(c *gin.Context) {
+func (cs *OrderService) GetMyOrders(c *gin.Context) {
 	var customerExist Models.Customer
 	err := cs.db.IsPresentC(c.Param("id"), &customerExist)
 	if err != nil {

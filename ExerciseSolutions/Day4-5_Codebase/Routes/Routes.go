@@ -26,6 +26,7 @@ func SetupRouter() *gin.Engine {
 		grp1.GET("retailer/:id", withProduct.IsRetailerAuthenticated)
 
 		grp1.POST("order", withCustomer.CreateOrder)
+		grp1.POST("orders", withCustomer.CreateMultipleOrder)
 		grp1.GET("order/:id", withCustomer.FindOrderUpdates)
 		grp1.POST("order/:id", withCustomer.SetOrderStatus)
 		grp1.GET("orders/:id", withCustomer.GetMyOrders)
