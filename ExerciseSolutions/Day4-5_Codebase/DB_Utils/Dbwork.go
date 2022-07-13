@@ -96,7 +96,7 @@ func (db *DB) DoCreateO(Order *Models.Order) {
 }
 
 func (db *DB) DoCreateOU(Order *Models.Order) {
-	Config.DB.Create(Order)
+	Config.DB.Save(Order)
 }
 
 func (db *DB) FindAllOrders(products *[]Models.Order) error {

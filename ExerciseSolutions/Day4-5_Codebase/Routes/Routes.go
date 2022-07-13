@@ -3,15 +3,16 @@ package Routes
 import "C"
 import (
 	"github.com/gin-gonic/gin"
+	Controller "july8Files/Controller"
 	Utils "july8Files/DB_Utils"
-	Service "july8Files/Service"
 )
 
 func SetupRouter() *gin.Engine {
 	r := gin.Default()
 	grp1 := r.Group("/Home")
-	withCustomer := Service.NewCustomer(Utils.GetDB())
-	withProduct := Service.NewProduct(Utils.GetDB())
+
+	withCustomer := Controller.NewCustomer(Utils.GetDB())
+	withProduct := Controller.NewProduct(Utils.GetDB())
 	{
 		grp1.POST("product", withProduct.CreateProduct)
 		grp1.GET("product/:id", withProduct.FindProduct)

@@ -1,35 +1,35 @@
-package Controllers
+package Service
 
 import (
 	"github.com/gin-gonic/gin"
 	_ "github.com/go-sql-driver/mysql"
-	"july8Files/DB_Utils"
+	Utils "july8Files/DB_Utils"
 	"july8Files/Models"
 	"net/http"
 	"strconv"
 )
 
-type ProductsInterface interface {
-	CreateProduct(c *gin.Context)
-	FindProduct(c *gin.Context)
-	GetProducts(c *gin.Context)
+type ProductServiceInterface interface {
+	SaveProduct(c *gin.Context)
+	FindMyProduct(c *gin.Context)
+	GetAllProducts(c *gin.Context)
+	UpdateProduct(c *gin.Context)
 	DeleteProduct(c *gin.Context)
 	GetAllTransactions(c *gin.Context)
-	SetOrderStatus(c *gin.Context)
 	AuthRetailer(c *gin.Context)
 	RemoveAuthRetailer(c *gin.Context)
-	IsRetailerAuthenticated(c *gin.Context)
+	IsAuthRetailer(c *gin.Context)
 }
 
-type ProductHandle struct {
+type ProductService struct {
 	db Utils.InterfaceDB
 }
 
-func NewProduct(db Utils.InterfaceDB) *ProductHandle {
-	return &ProductHandle{db}
+func NewProductService(db Utils.InterfaceDB) *ProductService {
+	return &ProductService{db}
 }
 
-func (ph ProductHandle) CreateProduct(c *gin.Context) {
+func (ps *ProductService) SaveProduct(c *gin.Context) {
 	var product Models.Product
 	err := c.ShouldBindJSON(&product)
 	if err != nil {
@@ -44,19 +44,19 @@ func (ph ProductHandle) CreateProduct(c *gin.Context) {
 	}
 
 	var retailer Models.Retailer
-	errNew := ph.db.IsPresentR(strconv.Itoa(int(product.RetailerID)), &retailer)
+	errNew := ps.db.IsPresentR(strconv.Itoa(int(product.RetailerID)), &retailer)
 	if errNew != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"Error": "Sorry,Retailer is not Authenticated"})
 		return
 	}
 
-	ph.db.DoCreate(&product)
+	ps.db.DoCreate(&product)
 	c.JSON(http.StatusOK, gin.H{"Product Saved": product})
 }
 
-func (ph ProductHandle) FindProduct(c *gin.Context) {
+func (ps *ProductService) FindMyProduct(c *gin.Context) {
 	var product Models.Product
-	err := ph.db.IsPresent(c.Param("id"), &product)
+	err := ps.db.IsPresent(c.Param("id"), &product)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"Error": err.Error()})
 		return
@@ -64,13 +64,13 @@ func (ph ProductHandle) FindProduct(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"Product with id Found": product})
 }
 
-func (ph ProductHandle) GetProducts(c *gin.Context) {
+func (ps *ProductService) GetAllProducts(c *gin.Context) {
 	var products []Models.Product
-	ph.db.DoFind(&products)
+	ps.db.DoFind(&products)
 	c.JSON(http.StatusOK, gin.H{"Products": products})
 }
 
-func (ph ProductHandle) UpdateProduct(c *gin.Context) {
+func (ps *ProductService) UpdateProduct(c *gin.Context) {
 	var productNew Models.Product
 	err := c.ShouldBindJSON(&productNew)
 	if err != nil {
@@ -79,7 +79,7 @@ func (ph ProductHandle) UpdateProduct(c *gin.Context) {
 	}
 
 	var ProductExist Models.Product
-	errNew := ph.db.IsPresent(c.Param("id"), &ProductExist)
+	errNew := ps.db.IsPresent(c.Param("id"), &ProductExist)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"Error": errNew.Error()})
 		return
@@ -90,18 +90,18 @@ func (ph ProductHandle) UpdateProduct(c *gin.Context) {
 		return
 	}
 
-	ph.db.DoUpdate(&ProductExist, productNew)
+	ps.db.DoUpdate(&ProductExist, productNew)
 	c.JSON(http.StatusOK, gin.H{"ProductNew": productNew})
 }
 
-func (ph ProductHandle) DeleteProduct(c *gin.Context) {
+func (ps *ProductService) DeleteProduct(c *gin.Context) {
 	var product Models.Product
-	err := ph.db.IsPresent(c.Param("id"), &product)
+	err := ps.db.IsPresent(c.Param("id"), &product)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"Error": err.Error()})
 		return
 	}
-	errNew := ph.db.DoDelete(&product)
+	errNew := ps.db.DoDelete(&product)
 	if errNew != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"Error": errNew.Error()})
 		return
@@ -109,9 +109,9 @@ func (ph ProductHandle) DeleteProduct(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"Product Deleted Successfully": &product})
 }
 
-func (ph ProductHandle) GetAllTransactions(c *gin.Context) {
+func (ps *ProductService) GetAllTransactions(c *gin.Context) {
 	var allOrders []Models.Order
-	errNew := ph.db.FindAllOrders(&allOrders)
+	errNew := ps.db.FindAllOrders(&allOrders)
 	if errNew != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"Error": errNew.Error()})
 		return
@@ -120,33 +120,7 @@ func (ph ProductHandle) GetAllTransactions(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"All Order updates": allOrders})
 }
 
-func (ph ProductHandle) SetOrderStatus(c *gin.Context) {
-	var orderStatus Models.Order
-	err := c.ShouldBindJSON(&orderStatus)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"Error": err.Error()})
-		return
-	}
-
-	nwErr := orderStatus.Status
-	if nwErr == "" {
-		c.JSON(http.StatusBadRequest, gin.H{"Error": "please provide order status"})
-		return
-	}
-
-	var orderExist Models.Order
-	errNew := ph.db.IsPresentO(c.Param("id"), &orderExist)
-	if errNew != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"Error": "Given Order id to be updated do not exist"})
-		return
-	}
-	orderUpdated := Models.Order{ID: orderExist.ID, CustomerID: orderExist.CustomerID, ProductID: orderExist.ProductID, Quantity: orderExist.Quantity, Status: orderStatus.Status}
-
-	ph.db.DoCreateOU(&orderUpdated)
-	c.JSON(http.StatusOK, gin.H{"Order": orderUpdated})
-}
-
-func (ph *ProductHandle) AuthRetailer(c *gin.Context) {
+func (ps *ProductService) AuthRetailer(c *gin.Context) {
 	var retailer Models.Retailer
 	err := c.ShouldBindJSON(&retailer)
 	if err != nil {
@@ -160,26 +134,26 @@ func (ph *ProductHandle) AuthRetailer(c *gin.Context) {
 		return
 	}
 
-	ph.db.DoCreateR(&retailer)
+	ps.db.DoCreateR(&retailer)
 	c.JSON(http.StatusOK, gin.H{"Retailer": retailer})
 }
 
-func (ph *ProductHandle) RemoveAuthRetailer(c *gin.Context) {
+func (ps *ProductService) RemoveAuthRetailer(c *gin.Context) {
 	var retailer Models.Retailer
-	err := ph.db.IsPresentR(c.Param("id"), &retailer)
+	err := ps.db.IsPresentR(c.Param("id"), &retailer)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"Error": err.Error()})
 		return
 	}
 
 	var products Models.Product
-	newErr := ph.db.IsPresentRP(c.Param("id"), &products)
+	newErr := ps.db.IsPresentRP(c.Param("id"), &products)
 	if newErr == nil {
 		c.JSON(http.StatusBadRequest, gin.H{"Error": "Can not remove authentication, One product is process for this retailer id"})
 		return
 	}
 
-	errNew := ph.db.DoDeleteR(&retailer)
+	errNew := ps.db.DoDeleteR(&retailer)
 	if errNew != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"Error": errNew.Error()})
 		return
@@ -187,9 +161,9 @@ func (ph *ProductHandle) RemoveAuthRetailer(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"Retailer Deleted": &retailer})
 }
 
-func (ph *ProductHandle) IsRetailerAuthenticated(c *gin.Context) {
+func (ps *ProductService) IsAuthRetailer(c *gin.Context) {
 	var retailer Models.Retailer
-	err := ph.db.IsPresentR(c.Param("id"), &retailer)
+	err := ps.db.IsPresentR(c.Param("id"), &retailer)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"Error": "Retailer is not Authenticated"})
 		return
