@@ -1,8 +1,8 @@
 package Utils
 
 import (
-	"july8Files/config"
-	"july8Files/models"
+	"Day4-5_Codebase/config"
+	"Day4-5_Codebase/models"
 )
 
 type InterfaceDB interface {

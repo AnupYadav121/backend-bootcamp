@@ -1,11 +1,11 @@
 package Controllers
 
 import (
+	"Day4-5_Codebase/models"
+	"Day4-5_Codebase/mutex"
+	"Day4-5_Codebase/service"
 	"github.com/gin-gonic/gin"
 	_ "github.com/go-sql-driver/mysql"
-	"july8Files/models"
-	"july8Files/mutex"
-	"july8Files/service"
 	"net/http"
 	"time"
 )
@@ -75,7 +75,9 @@ func (ph ProductHandle) UpdateProduct(c *gin.Context) {
 func (ph ProductHandle) DeleteProduct(c *gin.Context) {
 	var product models.Product
 	ph.ps.DeleteProduct(c, &product)
-	c.JSON(http.StatusOK, gin.H{"Product Deleted Successfully": product})
+	if product.RetailerID != 0 {
+		c.JSON(http.StatusOK, gin.H{"Product Deleted Successfully": product})
+	}
 }
 
 func (ph ProductHandle) GetAllTransactions(c *gin.Context) {
@@ -99,10 +101,12 @@ func (ph *ProductHandle) AuthRetailer(c *gin.Context) {
 func (ph *ProductHandle) RemoveAuthRetailer(c *gin.Context) {
 	if isAvailable := mutex.Mutex.Lock("retailer_id" + c.Param("id")); isAvailable == false {
 		c.JSON(http.StatusPreconditionFailed, gin.H{"Error": "retailer id is being deleted, wait,you can try this on another id"})
-		time.Sleep(2 * time.Second)
 		return
 	}
-	defer mutex.Mutex.UnLock("retailer_id" + c.Param("id"))
+	if mutex.Mutex.Lock("retailer_id"+c.Param("id")) == true {
+		time.Sleep(5 * time.Second)
+		defer mutex.Mutex.UnLock("retailer_id" + c.Param("id"))
+	}
 
 	var retailer models.Retailer
 

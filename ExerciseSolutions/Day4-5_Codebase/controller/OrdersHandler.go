@@ -1,12 +1,12 @@
 package Controllers
 
 import (
+	"Day4-5_Codebase/dto"
+	"Day4-5_Codebase/models"
+	"Day4-5_Codebase/mutex"
+	"Day4-5_Codebase/service"
 	"github.com/gin-gonic/gin"
 	_ "github.com/go-sql-driver/mysql"
-	"july8Files/dto"
-	"july8Files/models"
-	"july8Files/mutex"
-	"july8Files/service"
 	"net/http"
 	"time"
 )

@@ -2,10 +2,10 @@ package routes
 
 import "C"
 import (
+	Controller "Day4-5_Codebase/controller"
+	Utils "Day4-5_Codebase/db_utils"
+	"Day4-5_Codebase/service"
 	"github.com/gin-gonic/gin"
-	Controller "july8Files/controller"
-	Utils "july8Files/db_utils"
-	"july8Files/service"
 )
 
 func SetupRouter() *gin.Engine {

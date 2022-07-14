@@ -2,11 +2,11 @@
 package main
 
 import (
+	"Day4-5_Codebase/config"
+	"Day4-5_Codebase/models"
+	"Day4-5_Codebase/routes"
 	"fmt"
 	"github.com/jinzhu/gorm"
-	"july8Files/config"
-	"july8Files/models"
-	"july8Files/routes"
 )
 
 var err error

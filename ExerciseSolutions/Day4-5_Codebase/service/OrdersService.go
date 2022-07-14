@@ -1,11 +1,11 @@
 package service
 
 import (
+	"Day4-5_Codebase/db_utils"
+	"Day4-5_Codebase/dto"
+	"Day4-5_Codebase/models"
 	"github.com/gin-gonic/gin"
 	_ "github.com/go-sql-driver/mysql"
-	"july8Files/db_utils"
-	"july8Files/dto"
-	"july8Files/models"
 	"net/http"
 	"strconv"
 )

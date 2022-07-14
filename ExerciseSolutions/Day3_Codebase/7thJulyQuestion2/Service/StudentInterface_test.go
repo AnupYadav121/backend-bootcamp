@@ -45,13 +45,11 @@ func TestFindStudent(t *testing.T) {
 		},
 	}
 
-	// mockgen -destination=Utils/mock/mock.go -package=Utils 7thJulyQuestion2/Utils InterfaceDB
-
 	ctrl := gomock.NewController(t)
 	iMock := Utils.NewMockInterfaceDB(ctrl)
 
 	for _, _ = range tests {
-		iMock.EXPECT().IsPresent(gomock.Any(), gomock.Any()).Return(&student1, nil).Times(2)
+		iMock.EXPECT().IsPresent(gomock.Any(), gomock.Any()).Return(&student1, nil).Times(1)
 		studentService := NewStudent(iMock)
 
 		c := &gin.Context{}
@@ -61,14 +59,7 @@ func TestFindStudent(t *testing.T) {
 				Value: "1",
 			},
 		}
-		cc := &gin.Context{}
-		cc.Params = gin.Params{
-			{
-				Key:   "id",
-				Value: "1",
-			},
-		}
+
 		studentService.FindStudent(c)
-		studentService.FindStudent(cc)
 	}
 }

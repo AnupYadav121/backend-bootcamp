@@ -1,10 +1,11 @@
 package service
 
 import (
+	Utils "Day4-5_Codebase/db_utils"
+	"Day4-5_Codebase/models"
+	"fmt"
 	"github.com/gin-gonic/gin"
 	_ "github.com/go-sql-driver/mysql"
-	Utils "july8Files/db_utils"
-	"july8Files/models"
 	"net/http"
 	"strconv"
 )
@@ -21,6 +22,8 @@ type ProductServiceInterface interface {
 	IsAuthRetailer(c *gin.Context, retailer models.Retailer)
 }
 
+var prdSrv ProductService
+
 type ProductService struct {
 	db Utils.InterfaceDB
 }
@@ -29,21 +32,22 @@ func NewProductService(db Utils.InterfaceDB) *ProductService {
 	return &ProductService{db}
 }
 
-func (ps *ProductService) SaveProduct(c *gin.Context, product *models.Product) {
+func (ps *ProductService) SaveProduct(c *gin.Context, product *models.Product) (p *models.Product, err error) {
 
 	nwErr := product.ProductValidate()
 	if nwErr != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"Error": nwErr.Error()})
-		return
+		var tmpProduct models.Product
+		return &tmpProduct, nwErr
 	}
-
+	fmt.Println(ps.db)
 	var retailer models.Retailer
 	errNew := ps.db.IsPresentR(strconv.Itoa(int(product.RetailerID)), &retailer)
 	if errNew != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"Error": "Sorry,Retailer is not Authenticated"})
-		return
+		var tmpProduct models.Product
+		return &tmpProduct, errNew
 	}
 	ps.db.DoCreate(product)
+	return product, nil
 }
 
 func (ps *ProductService) FindMyProduct(c *gin.Context, product *models.Product) {
