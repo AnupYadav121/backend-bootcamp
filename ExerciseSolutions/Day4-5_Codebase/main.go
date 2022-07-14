@@ -4,15 +4,15 @@ package main
 import (
 	"fmt"
 	"github.com/jinzhu/gorm"
-	"july8Files/Config"
-	"july8Files/Models"
-	"july8Files/Routes"
+	"july8Files/config"
+	"july8Files/models"
+	"july8Files/routes"
 )
 
 var err error
 
 func main() {
-	Config.DB, err = gorm.Open("mysql", Config.DbURL(Config.BuildDBConfig()))
+	config.DB, err = gorm.Open("mysql", config.DbURL(config.BuildDBConfig()))
 	if err != nil {
 		fmt.Println("Status:", err)
 	}
@@ -22,14 +22,14 @@ func main() {
 		if err != nil {
 			panic("Error Occurred in closing DB")
 		}
-	}(Config.DB)
+	}(config.DB)
 
-	Config.DB.AutoMigrate(&Models.Order{})
-	Config.DB.AutoMigrate(&Models.Product{})
-	Config.DB.AutoMigrate(&Models.Customer{})
-	Config.DB.AutoMigrate(&Models.Retailer{})
+	config.DB.AutoMigrate(&models.Order{})
+	config.DB.AutoMigrate(&models.Product{})
+	config.DB.AutoMigrate(&models.Customer{})
+	config.DB.AutoMigrate(&models.Retailer{})
 
-	r := Routes.SetupRouter()
+	r := routes.SetupRouter()
 	//running
 	err := r.Run()
 	if err != nil {

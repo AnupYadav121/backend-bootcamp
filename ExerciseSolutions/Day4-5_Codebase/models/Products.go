@@ -1,10 +1,10 @@
-package Models
+package models
 
 import "errors"
 
 type Product struct {
 	ID          uint   `json:"id"`
-	RetailerID  uint   `json:"retailerID" gorm:"foreign_key"`
+	RetailerID  int    `json:"retailer_id" gorm:"foreign_key"`
 	ProductName string `json:"product_name"`
 	Price       int    `json:"price"`
 	Quantity    int    `json:"quantity"`

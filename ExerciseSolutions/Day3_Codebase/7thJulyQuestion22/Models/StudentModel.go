@@ -1,4 +1,4 @@
-// Models/StudentModel.go
+// models/StudentModel.go
 package Models
 
 type Student struct {

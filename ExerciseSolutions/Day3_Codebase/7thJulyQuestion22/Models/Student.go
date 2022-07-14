@@ -1,4 +1,4 @@
-// Models/Student.go
+// models/Student.go
 package Models
 
 import "C"

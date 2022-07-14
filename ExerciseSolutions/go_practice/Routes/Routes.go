@@ -1,4 +1,4 @@
-// Routes/Routes.go
+// routes/routes.go
 package Routes
 
 import (

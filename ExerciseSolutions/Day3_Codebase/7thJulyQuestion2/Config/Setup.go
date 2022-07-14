@@ -1,4 +1,4 @@
-// Config/Database.go
+// config/Database.go
 package Config
 
 import (

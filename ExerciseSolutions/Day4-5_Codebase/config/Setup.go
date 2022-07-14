@@ -1,5 +1,5 @@
-// Config/Database.go
-package Config
+// config/Database.go
+package config
 
 import (
 	"fmt"

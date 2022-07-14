@@ -1,4 +1,4 @@
-// Models/User.go
+// models/User.go
 package Models
 
 import "C"
