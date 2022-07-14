@@ -44,10 +44,10 @@ func (ch *CustomerHandle) CreateCustomer(c *gin.Context) {
 
 func (ch *CustomerHandle) DeleteCustomer(c *gin.Context) {
 	if isAvailable := mutex.Mutex.Lock("customer_id" + c.Param("id")); isAvailable == false {
-		c.JSON(http.StatusPreconditionFailed, gin.H{"Error": "customer id is being deleted, wait"})
+		c.JSON(http.StatusPreconditionFailed, gin.H{"Error": "customer id is being deleted, wait,you can try this on another id"})
+		time.Sleep(2 * time.Second)
 		return
 	}
-	time.Sleep(2 * time.Second)
 	defer mutex.Mutex.UnLock("customer_id" + c.Param("id"))
 
 	var customer models.Customer

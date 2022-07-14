@@ -54,11 +54,11 @@ func (ph ProductHandle) GetProducts(c *gin.Context) {
 }
 
 func (ph ProductHandle) UpdateProduct(c *gin.Context) {
-	if isAvailable := mutex.Mutex.Lock("product_id" + c.Param("id")); isAvailable == false {
-		c.JSON(http.StatusPreconditionFailed, gin.H{"Error": "product id is already being updated, wait"})
+	if isAvailable := mutex.Mutex.Lock("product_id" + c.Param("id")); isAvailable == true {
+		c.JSON(http.StatusPreconditionFailed, gin.H{"Error": "product id is already being updated, wait,you can try this on another id"})
+		time.Sleep(2 * time.Second)
 		return
 	}
-	time.Sleep(3 * time.Second)
 	defer mutex.Mutex.UnLock("product_id" + c.Param("id"))
 
 	var productNew models.Product
@@ -98,10 +98,10 @@ func (ph *ProductHandle) AuthRetailer(c *gin.Context) {
 
 func (ph *ProductHandle) RemoveAuthRetailer(c *gin.Context) {
 	if isAvailable := mutex.Mutex.Lock("retailer_id" + c.Param("id")); isAvailable == false {
-		c.JSON(http.StatusPreconditionFailed, gin.H{"Error": "retailer id is being deleted, wait"})
+		c.JSON(http.StatusPreconditionFailed, gin.H{"Error": "retailer id is being deleted, wait,you can try this on another id"})
+		time.Sleep(2 * time.Second)
 		return
 	}
-	time.Sleep(2 * time.Second)
 	defer mutex.Mutex.UnLock("retailer_id" + c.Param("id"))
 
 	var retailer models.Retailer
