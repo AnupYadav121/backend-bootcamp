@@ -4,21 +4,21 @@ import (
 	"Day4-5_Codebase/db_utils"
 	"Day4-5_Codebase/dto"
 	"Day4-5_Codebase/models"
+	"errors"
 	"github.com/gin-gonic/gin"
 	_ "github.com/go-sql-driver/mysql"
-	"net/http"
 	"strconv"
 )
 
 type OrderServiceInterface interface {
-	AuthCustomer(c *gin.Context, customer *models.Customer)
-	RemoveAuthCustomer(c *gin.Context, customer *models.Customer)
-	IsAuthCustomer(c *gin.Context, customer *models.Customer)
-	OrderCreation(c *gin.Context, newOrder *models.Order)
-	SetStatus(c *gin.Context, orderStatus *models.Order)
-	FindUpdate(c *gin.Context, orderExist *models.Order)
-	GetMyOrders(c *gin.Context, customerExist *models.Customer)
-	MultipleOrderCreation(c *gin.Context, newOrder *dto.Order)
+	AuthCustomer(customer *models.Customer) (c *models.Customer, er error)
+	RemoveAuthCustomer(c *gin.Context, customer *models.Customer) (er error)
+	IsAuthCustomer(c *gin.Context, customer *models.Customer) (cst *models.Customer, er error)
+	OrderCreation(newOrder *models.Order) (o *models.Order, er error)
+	SetStatus(c *gin.Context, orderStatus *models.Order) (order *models.Order, er error)
+	FindUpdate(c *gin.Context, orderExist *models.Order) (o *models.Order, er error)
+	GetMyOrders(c *gin.Context, customerExist *models.Customer) (orders *[]models.Order, er error)
+	MultipleOrderCreation(newOrder *dto.Order) (er error)
 }
 
 type OrderService struct {
@@ -29,127 +29,143 @@ func NewCustomerService(db Utils.InterfaceDB) *OrderService {
 	return &OrderService{db}
 }
 
-func (cs *OrderService) AuthCustomer(c *gin.Context, customer *models.Customer) {
+func (cs *OrderService) AuthCustomer(customer *models.Customer) (c *models.Customer, er error) {
 	errNw := customer.CustomerValidate()
 	if errNw != nil {
-		c.JSON(http.StatusBadRequest, errNw.Error())
-		return
+		var tmpCustomer models.Customer
+		return &tmpCustomer, errors.New("provided customer body is invalid")
 	}
-	cs.db.DoCreateC(customer)
+	err := cs.db.DoCreateC(customer)
+	if err != nil {
+		var tmpCustomer models.Customer
+		return &tmpCustomer, err
+	}
+	return customer, nil
 }
 
-func (cs *OrderService) RemoveAuthCustomer(c *gin.Context, customer *models.Customer) {
-	err := cs.db.IsPresentC(c.Param("id"), customer)
+func (cs *OrderService) RemoveAuthCustomer(c *gin.Context, customer *models.Customer) (er error) {
+	err := cs.db.IsPresentC(c.Param("customerID"), customer)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"Error": err.Error()})
-		return
+		return errors.New("customer id not found")
 	}
 
 	var orderUpdates models.Order
-	newErr := cs.db.IsPresentCU(c.Param("id"), &orderUpdates)
+	newErr := cs.db.IsPresentCU(c.Param("customerID"), &orderUpdates)
 	if newErr == nil {
-		c.JSON(http.StatusBadRequest, gin.H{"Error": "Can not remove authentication, One order is process for this customer id"})
-		return
+		return errors.New("can not remove authentication, customer is associated with a order")
 	}
 
 	errNew := cs.db.DoDeleteC(customer)
 	if errNew != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"Error": errNew.Error()})
-		return
+		return errNew
 	}
+	return nil
 }
 
-func (cs *OrderService) IsAuthCustomer(c *gin.Context, customer *models.Customer) {
-	err := cs.db.IsPresentC(c.Param("id"), customer)
+func (cs *OrderService) IsAuthCustomer(c *gin.Context, customer *models.Customer) (cst *models.Customer, er error) {
+	err := cs.db.IsPresentC(c.Param("customerID"), customer)
 	if err != nil {
-		c.JSON(http.StatusOK, gin.H{"Error": "Customer is not Authenticated"})
-		return
+		var tmpCustomer models.Customer
+		return &tmpCustomer, errors.New("customer id is not authenticated")
 	}
+	return customer, nil
 }
 
-func (cs *OrderService) OrderCreation(c *gin.Context, newOrder *models.Order) {
+func (cs *OrderService) OrderCreation(newOrder *models.Order) (o *models.Order, er error) {
 	nwErr := newOrder.OrderValidate()
 	if nwErr != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"Error": nwErr})
-		return
+		var order models.Order
+		return &order, errors.New("provided order body is invalid")
 	}
 
 	var customer models.Customer
 	errNew := cs.db.IsPresentC(strconv.Itoa(int(newOrder.CustomerID)), &customer)
 	if errNew != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"Error": "Given customer id is not authenticated"})
-		return
+		var order models.Order
+		return &order, errors.New("customer id given is not authenticated")
 	}
 
 	var product models.Product
 	newErr := cs.db.IsPresent(strconv.Itoa(int(newOrder.ProductID)), &product)
 	if newErr != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"Error": "Given product id does not exist"})
-		return
+		var order models.Order
+		return &order, errors.New("product id given is not authenticated")
 	}
 
-	cs.db.DoCreateO(newOrder)
+	erNew := cs.db.DoCreateO(newOrder)
+	if errNew != nil {
+		var order models.Order
+		return &order, erNew
+	}
+	return newOrder, nil
 }
 
-func (cs *OrderService) MultipleOrderCreation(c *gin.Context, newOrder *dto.Order) {
+func (cs *OrderService) MultipleOrderCreation(newOrder *dto.Order) (er error) {
 	nwErr := newOrder.OrderValidate()
 	if nwErr != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"Error": nwErr})
-		return
+		return errors.New("provided order body is invalid")
 	}
 
 	var customer models.Customer
 	errNew := cs.db.IsPresentC(strconv.Itoa(int(newOrder.CustomerID)), &customer)
 	if errNew != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"Error": "Given customer id is not authenticated"})
-		return
+		return errors.New("customer id given is not authenticated")
 	}
 
 	for i := 0; i < len(newOrder.ProductID); i++ {
 		var product models.Product
-		newErr := cs.db.IsPresent(strconv.Itoa(int(newOrder.ProductID[i])), &product)
+		newErr := cs.db.IsPresent(strconv.Itoa(newOrder.ProductID[i]), &product)
 		if newErr != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"Error": "Given one of the product id does not exist"})
-			return
+			return errors.New("one of the product id given does not exist")
 		}
 		orderNew := models.Order{ProductID: newOrder.ProductID[i], CustomerID: newOrder.CustomerID, Quantity: newOrder.Quantity[i]}
-		cs.db.DoCreateO(&orderNew)
+		erNew := cs.db.DoCreateO(&orderNew)
+		if errNew != nil {
+			return erNew
+		}
 	}
+	return nil
 }
 
-func (cs *OrderService) SetStatus(c *gin.Context, orderStatus *models.Order) {
+func (cs *OrderService) SetStatus(c *gin.Context, orderStatus *models.Order) (order *models.Order, er error) {
 	var orderExist models.Order
 	errNew := cs.db.IsPresentO(c.Param("id"), &orderExist)
 	if errNew != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"Error": "Given Order id to be updated do not exist"})
-		return
+		var tmpOrder models.Order
+		return &tmpOrder, errors.New("order id given does not exist")
 	}
+
 	orderUpdated := models.Order{ID: orderExist.ID, CustomerID: orderExist.CustomerID, ProductID: orderExist.ProductID, Quantity: orderExist.Quantity, Status: orderStatus.Status}
-	cs.db.DoCreateOU(&orderUpdated)
-	c.JSON(http.StatusOK, gin.H{"Order": orderUpdated})
+
+	erNew := cs.db.DoCreateOU(&orderUpdated)
+	if errNew != nil {
+		var tmpOrder models.Order
+		return &tmpOrder, erNew
+	}
+	return &orderUpdated, nil
 }
 
-func (cs *OrderService) FindUpdate(c *gin.Context, orderExist *models.Order) {
+func (cs *OrderService) FindUpdate(c *gin.Context, orderExist *models.Order) (o *models.Order, er error) {
 	err := cs.db.IsPresentO(c.Param("id"), orderExist)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"Error": "Either order with this id does not exist or order status is not updated by retailer yet."})
-		return
+		var order models.Order
+		return &order, errors.New("order id given does not exist")
 	}
-
+	return orderExist, nil
 }
 
-func (cs *OrderService) GetMyOrders(c *gin.Context, customerExist *models.Customer) {
-	err := cs.db.IsPresentC(c.Param("id"), customerExist)
+func (cs *OrderService) GetMyOrders(c *gin.Context, customerExist *models.Customer) (orders *[]models.Order, er error) {
+	err := cs.db.IsPresentC(c.Param("customerID"), customerExist)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"Error": "Sorry ! you are not authenticated ,you can not have any orders"})
-		return
+		var tmpOrders []models.Order
+		return &tmpOrders, errors.New("sorry ! you are not authenticated ,you can not have any orders")
 	}
 
 	var myOrders []models.Order
-	errNew := cs.db.IsCustomerOrder(c.Param("id"), &myOrders)
+	errNew := cs.db.IsCustomerOrder(c.Param("customerID"), &myOrders)
 	if errNew != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"Error": err.Error()})
-		return
+		var tmpOrders []models.Order
+		return &tmpOrders, errors.New("you do not have any orders")
 	}
-	c.JSON(http.StatusOK, gin.H{"My orders update": myOrders})
+	return &myOrders, nil
 }

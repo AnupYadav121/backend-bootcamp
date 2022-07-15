@@ -12,9 +12,9 @@ import (
 )
 
 type CustomerInterface interface {
-	CreateCustomer(c *gin.Context)
-	DeleteCustomer(c *gin.Context)
-	IsCustomerAuthenticated(c *gin.Context)
+	AuthCustomer(c *gin.Context)
+	RemoveAuthCustomer(c *gin.Context)
+	IsCustomerAuthenticated(c *gin.Context) (cust *models.Customer, err error)
 	CreateOrder(c *gin.Context)
 	SetOrderStatus(c *gin.Context)
 	FindOrderUpdates(c *gin.Context)
@@ -30,35 +30,46 @@ func NewCustomer(os service.OrderServiceInterface) *CustomerHandle {
 	return &CustomerHandle{os}
 }
 
-func (ch *CustomerHandle) CreateCustomer(c *gin.Context) {
+func (ch *CustomerHandle) AuthCustomer(c *gin.Context) {
 	var customer models.Customer
 	err := c.ShouldBindJSON(&customer)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"Error": err.Error()})
 		return
 	}
-
-	ch.os.AuthCustomer(c, &customer)
-	c.JSON(http.StatusOK, gin.H{"Customer": customer})
+	savedCustomer, errNew := ch.os.AuthCustomer(&customer)
+	if errNew != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"Error": errNew.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"Customer": savedCustomer})
 }
 
-func (ch *CustomerHandle) DeleteCustomer(c *gin.Context) {
-	if isAvailable := mutex.Mutex.Lock("customer_id" + c.Param("id")); isAvailable == false {
+func (ch *CustomerHandle) RemoveAuthCustomer(c *gin.Context) {
+	if isAvailable := mutex.Mutex.Lock("customer_id" + c.Param("customerID")); isAvailable == false {
 		c.JSON(http.StatusPreconditionFailed, gin.H{"Error": "customer id is being deleted, wait,you can try this on another id"})
 		time.Sleep(2 * time.Second)
 		return
 	}
-	defer mutex.Mutex.UnLock("customer_id" + c.Param("id"))
+	defer mutex.Mutex.UnLock("customer_id" + c.Param("customerID"))
 
 	var customer models.Customer
-	ch.os.RemoveAuthCustomer(c, &customer)
+	err := ch.os.RemoveAuthCustomer(c, &customer)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"Error": err.Error()})
+		return
+	}
 	c.JSON(http.StatusOK, gin.H{"Customer Deleted": &customer})
 }
 
-func (ch *CustomerHandle) IsCustomerAuthenticated(c *gin.Context) {
+func (ch *CustomerHandle) IsCustomerAuthenticated(c *gin.Context) (cust *models.Customer, err error) {
 	var customer models.Customer
-	ch.os.IsAuthCustomer(c, &customer)
-	c.JSON(http.StatusOK, gin.H{"Success": "Great !, Customer is Authenticated"})
+	resCustomer, resErr := ch.os.IsAuthCustomer(c, &customer)
+	if resErr != nil {
+		var tmpCustomer models.Customer
+		return &tmpCustomer, resErr
+	}
+	return resCustomer, nil
 }
 
 func (ch *CustomerHandle) CreateOrder(c *gin.Context) {
@@ -69,8 +80,12 @@ func (ch *CustomerHandle) CreateOrder(c *gin.Context) {
 		return
 	}
 
-	ch.os.OrderCreation(c, &newOrder)
-	c.JSON(http.StatusOK, gin.H{"Order": newOrder})
+	savedOrder, errNew := ch.os.OrderCreation(&newOrder)
+	if errNew != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"Error": errNew.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"Order": savedOrder})
 }
 
 func (ch *CustomerHandle) CreateMultipleOrder(c *gin.Context) {
@@ -81,7 +96,11 @@ func (ch *CustomerHandle) CreateMultipleOrder(c *gin.Context) {
 		return
 	}
 
-	ch.os.MultipleOrderCreation(c, &newOrder)
+	errNew := ch.os.MultipleOrderCreation(&newOrder)
+	if errNew != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"Error": errNew.Error()})
+		return
+	}
 	c.JSON(http.StatusOK, gin.H{"Order": newOrder})
 }
 
@@ -98,16 +117,30 @@ func (ch *CustomerHandle) SetOrderStatus(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"Error": "please provide order status"})
 		return
 	}
-	ch.os.SetStatus(c, &orderStatus)
+	updatedOrder, errNew := ch.os.SetStatus(c, &orderStatus)
+	if errNew != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"Error": errNew.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"New Order": updatedOrder})
 }
 
 func (ch *CustomerHandle) FindOrderUpdates(c *gin.Context) {
 	var orderExist models.Order
-	ch.os.FindUpdate(c, &orderExist)
-	c.JSON(http.StatusOK, gin.H{"Order updates": orderExist})
+	updatedOrder, errNew := ch.os.FindUpdate(c, &orderExist)
+	if errNew != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"Error": errNew.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"Order updated": updatedOrder})
 }
 
 func (ch *CustomerHandle) GetMyOrders(c *gin.Context) {
 	var customerExist models.Customer
-	ch.os.GetMyOrders(c, &customerExist)
+	orders, err := ch.os.GetMyOrders(c, &customerExist)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"Error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"my orders": orders})
 }

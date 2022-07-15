@@ -36,21 +36,37 @@ func (ph ProductHandle) CreateProduct(c *gin.Context) {
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"Error": err.Error()})
 		return
+	} else {
+		savedProduct, errNew := ph.ps.SaveProduct(&product)
+		if errNew != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"Error": errNew.Error()})
+			return
+		} else {
+			c.JSON(http.StatusOK, gin.H{"Product Saved": savedProduct})
+		}
 	}
-	ph.ps.SaveProduct(c, &product)
-	c.JSON(http.StatusOK, gin.H{"Product Saved": product})
 }
 
 func (ph ProductHandle) FindProduct(c *gin.Context) {
 	var product models.Product
-	ph.ps.FindMyProduct(c, &product)
-	c.JSON(http.StatusOK, gin.H{"Product with id Found": product})
+	_, err := ph.ps.FindMyProduct(c, &product)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"Error": err.Error()})
+		return
+	} else {
+		c.JSON(http.StatusOK, gin.H{"Product with id Found": product})
+		return
+	}
 }
 
 func (ph ProductHandle) GetProducts(c *gin.Context) {
 	var products []models.Product
-	ph.ps.GetAllProducts(c, &products)
-	c.JSON(http.StatusOK, gin.H{"Products": products})
+	listProduct, err := ph.ps.GetAllProducts(c, &products)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"Error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"Products": listProduct})
 }
 
 func (ph ProductHandle) UpdateProduct(c *gin.Context) {
@@ -68,22 +84,33 @@ func (ph ProductHandle) UpdateProduct(c *gin.Context) {
 		return
 	}
 
-	ph.ps.UpdateProduct(c, &productNew)
-	c.JSON(http.StatusOK, gin.H{"ProductNew": productNew})
+	updatedProduct, errNew := ph.ps.UpdateProduct(c, &productNew)
+	if errNew != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"Error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"ProductNew": updatedProduct})
 }
 
 func (ph ProductHandle) DeleteProduct(c *gin.Context) {
 	var product models.Product
-	ph.ps.DeleteProduct(c, &product)
+	err := ph.ps.DeleteProduct(c, &product)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"Error": err.Error()})
+		return
+	}
 	if product.RetailerID != 0 {
 		c.JSON(http.StatusOK, gin.H{"Product Deleted Successfully": product})
 	}
 }
 
 func (ph ProductHandle) GetAllTransactions(c *gin.Context) {
-	var allOrders []models.Order
-	ph.ps.GetAllTransactions(c, &allOrders)
-	c.JSON(http.StatusOK, gin.H{"All Order updates": allOrders})
+	allOrders, err := ph.ps.GetAllTransactions(c)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"Error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"All transacted orders are": allOrders})
 }
 
 func (ph *ProductHandle) AuthRetailer(c *gin.Context) {
@@ -94,8 +121,11 @@ func (ph *ProductHandle) AuthRetailer(c *gin.Context) {
 		return
 	}
 
-	ph.ps.AuthRetailer(c, &retailer)
-	c.JSON(http.StatusOK, gin.H{"Retailer": retailer})
+	newRetailer, errNew := ph.ps.AuthRetailer(c, &retailer)
+	if errNew != nil {
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"Retailer added with": newRetailer})
 }
 
 func (ph *ProductHandle) RemoveAuthRetailer(c *gin.Context) {
@@ -110,11 +140,22 @@ func (ph *ProductHandle) RemoveAuthRetailer(c *gin.Context) {
 
 	var retailer models.Retailer
 
-	ph.ps.RemoveAuthRetailer(c, &retailer)
+	retailerRemoved, err := ph.ps.RemoveAuthRetailer(c, &retailer)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"Error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"Retailer removed is": retailerRemoved})
 }
 
-func (ph *ProductHandle) IsRetailerAuthenticated(c *gin.Context) {
+func (ph *ProductHandle) IsRetailerAuthenticated(c *gin.Context) (retails *models.Retailer, er error) {
 	var retailer models.Retailer
-	ph.ps.IsAuthRetailer(c, retailer)
-	c.JSON(http.StatusOK, gin.H{"Success": "Great !, Retailer is Authenticated"})
+	resRetailer, err := ph.ps.IsAuthRetailer(c, &retailer)
+
+	if err != nil {
+		var rtls models.Retailer
+		return &rtls, err
+	} else {
+		return resRetailer, nil
+	}
 }
