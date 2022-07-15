@@ -64,6 +64,7 @@ func (cs *OrderService) RemoveAuthCustomer(c *gin.Context, customer *models.Cust
 
 func (cs *OrderService) IsAuthCustomer(c *gin.Context, customer *models.Customer) (cst *models.Customer, er error) {
 	err := cs.db.IsPresentC(c.Param("customerID"), customer)
+
 	if err != nil {
 		var tmpCustomer models.Customer
 		return &tmpCustomer, errors.New("customer id is not authenticated")
