@@ -78,11 +78,6 @@ func (ps *ProductService) UpdateProduct(c *gin.Context, productNew *models.Produ
 		return &product, errors.New("product with given id does not exist")
 	}
 
-	if ProductExist.Price == 0 {
-		var product models.Product
-		return &product, errors.New("could not find your order with id to be updated")
-	}
-
 	erNew := ps.db.DoUpdate(&ProductExist, productNew)
 	if erNew != nil {
 		var product models.Product

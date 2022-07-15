@@ -19,7 +19,7 @@ type ProductsInterface interface {
 	GetAllTransactions(c *gin.Context)
 	AuthRetailer(c *gin.Context)
 	RemoveAuthRetailer(c *gin.Context)
-	IsRetailerAuthenticated(c *gin.Context)
+	IsRetailerAuthenticated(c *gin.Context) (retails *models.Retailer, er error)
 }
 
 type ProductHandle struct {

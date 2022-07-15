@@ -3,11 +3,10 @@ package dto
 import "errors"
 
 type Order struct {
-	ID         uint   `json:"id"`
-	CustomerID int    `json:"customer_id" gorm:"foreign_key"`
-	ProductID  []int  ` json:"product_id"`
-	Quantity   []int  `json:"quantity"`
-	Status     string `json:"status"`
+	ID         uint  `json:"id"`
+	CustomerID int   `json:"customer_id" gorm:"foreign_key"`
+	ProductID  []int ` json:"product_id"`
+	Quantity   []int `json:"quantity"`
 }
 
 var (

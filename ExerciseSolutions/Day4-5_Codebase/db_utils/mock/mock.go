@@ -35,9 +35,11 @@ func (m *MockInterfaceDB) EXPECT() *MockInterfaceDBMockRecorder {
 }
 
 // DoCreate mocks base method.
-func (m *MockInterfaceDB) DoCreate(product *models.Product) {
+func (m *MockInterfaceDB) DoCreate(product *models.Product) error {
 	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "DoCreate", product)
+	ret := m.ctrl.Call(m, "DoCreate", product)
+	ret0, _ := ret[0].(error)
+	return ret0
 }
 
 // DoCreate indicates an expected call of DoCreate.
@@ -47,9 +49,11 @@ func (mr *MockInterfaceDBMockRecorder) DoCreate(product interface{}) *gomock.Cal
 }
 
 // DoCreateC mocks base method.
-func (m *MockInterfaceDB) DoCreateC(Customer *models.Customer) {
+func (m *MockInterfaceDB) DoCreateC(Customer *models.Customer) error {
 	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "DoCreateC", Customer)
+	ret := m.ctrl.Call(m, "DoCreateC", Customer)
+	ret0, _ := ret[0].(error)
+	return ret0
 }
 
 // DoCreateC indicates an expected call of DoCreateC.
@@ -59,9 +63,11 @@ func (mr *MockInterfaceDBMockRecorder) DoCreateC(Customer interface{}) *gomock.C
 }
 
 // DoCreateO mocks base method.
-func (m *MockInterfaceDB) DoCreateO(Order *models.Order) {
+func (m *MockInterfaceDB) DoCreateO(Order *models.Order) error {
 	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "DoCreateO", Order)
+	ret := m.ctrl.Call(m, "DoCreateO", Order)
+	ret0, _ := ret[0].(error)
+	return ret0
 }
 
 // DoCreateO indicates an expected call of DoCreateO.
@@ -71,9 +77,11 @@ func (mr *MockInterfaceDBMockRecorder) DoCreateO(Order interface{}) *gomock.Call
 }
 
 // DoCreateOU mocks base method.
-func (m *MockInterfaceDB) DoCreateOU(Order *models.Order) {
+func (m *MockInterfaceDB) DoCreateOU(Order *models.Order) error {
 	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "DoCreateOU", Order)
+	ret := m.ctrl.Call(m, "DoCreateOU", Order)
+	ret0, _ := ret[0].(error)
+	return ret0
 }
 
 // DoCreateOU indicates an expected call of DoCreateOU.
@@ -83,9 +91,11 @@ func (mr *MockInterfaceDBMockRecorder) DoCreateOU(Order interface{}) *gomock.Cal
 }
 
 // DoCreateR mocks base method.
-func (m *MockInterfaceDB) DoCreateR(retailer *models.Retailer) {
+func (m *MockInterfaceDB) DoCreateR(retailer *models.Retailer) error {
 	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "DoCreateR", retailer)
+	ret := m.ctrl.Call(m, "DoCreateR", retailer)
+	ret0, _ := ret[0].(error)
+	return ret0
 }
 
 // DoCreateR indicates an expected call of DoCreateR.
@@ -137,21 +147,25 @@ func (mr *MockInterfaceDBMockRecorder) DoDeleteR(retailer interface{}) *gomock.C
 }
 
 // DoFind mocks base method.
-func (m *MockInterfaceDB) DoFind(products *[]models.Product) {
+func (m *MockInterfaceDB) DoFind(id string, products *[]models.Product) error {
 	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "DoFind", products)
+	ret := m.ctrl.Call(m, "DoFind", id, products)
+	ret0, _ := ret[0].(error)
+	return ret0
 }
 
 // DoFind indicates an expected call of DoFind.
-func (mr *MockInterfaceDBMockRecorder) DoFind(products interface{}) *gomock.Call {
+func (mr *MockInterfaceDBMockRecorder) DoFind(id, products interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DoFind", reflect.TypeOf((*MockInterfaceDB)(nil).DoFind), products)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DoFind", reflect.TypeOf((*MockInterfaceDB)(nil).DoFind), id, products)
 }
 
 // DoUpdate mocks base method.
-func (m *MockInterfaceDB) DoUpdate(Product, newProduct *models.Product) {
+func (m *MockInterfaceDB) DoUpdate(Product, newProduct *models.Product) error {
 	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "DoUpdate", Product, newProduct)
+	ret := m.ctrl.Call(m, "DoUpdate", Product, newProduct)
+	ret0, _ := ret[0].(error)
+	return ret0
 }
 
 // DoUpdate indicates an expected call of DoUpdate.
@@ -161,9 +175,11 @@ func (mr *MockInterfaceDBMockRecorder) DoUpdate(Product, newProduct interface{})
 }
 
 // DoUpdateO mocks base method.
-func (m *MockInterfaceDB) DoUpdateO(newOrder models.Order) {
+func (m *MockInterfaceDB) DoUpdateO(newOrder models.Order) error {
 	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "DoUpdateO", newOrder)
+	ret := m.ctrl.Call(m, "DoUpdateO", newOrder)
+	ret0, _ := ret[0].(error)
+	return ret0
 }
 
 // DoUpdateO indicates an expected call of DoUpdateO.
@@ -173,17 +189,18 @@ func (mr *MockInterfaceDBMockRecorder) DoUpdateO(newOrder interface{}) *gomock.C
 }
 
 // FindAllOrders mocks base method.
-func (m *MockInterfaceDB) FindAllOrders(products *[]models.Order) error {
+func (m *MockInterfaceDB) FindAllOrders(id string) (*[]models.Order, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "FindAllOrders", products)
-	ret0, _ := ret[0].(error)
-	return ret0
+	ret := m.ctrl.Call(m, "FindAllOrders", id)
+	ret0, _ := ret[0].(*[]models.Order)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
 // FindAllOrders indicates an expected call of FindAllOrders.
-func (mr *MockInterfaceDBMockRecorder) FindAllOrders(products interface{}) *gomock.Call {
+func (mr *MockInterfaceDBMockRecorder) FindAllOrders(id interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindAllOrders", reflect.TypeOf((*MockInterfaceDB)(nil).FindAllOrders), products)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindAllOrders", reflect.TypeOf((*MockInterfaceDB)(nil).FindAllOrders), id)
 }
 
 // IsCustomerOrder mocks base method.
